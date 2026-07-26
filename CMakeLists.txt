@@ -3,7 +3,7 @@
 #
 
 # Add source to this project's executable.
-add_executable (Achronis "src/main.cpp" "src/Window.cpp" "src/VulkanContext.cpp" "src/VulkanContext.h")
+add_executable (Achronis "src/main.cpp" "src/Window.cpp" "src/VulkanContext.cpp" "src/VulkanContext.h" "src/VulkanSwapchain.cpp" "src/VulkanSwapchain.h")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET Achronis PROPERTY CXX_STANDARD 20)
