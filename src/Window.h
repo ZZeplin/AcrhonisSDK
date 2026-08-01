@@ -7,11 +7,11 @@
 
 struct WindowConfig
 {
-	GLFWwindow* handle {nullptr};
-	int width {1920}; 
-	int height {1080};
-	std::string_view title {"Achronis"};
-	bool shouldClose {false};
+	GLFWwindow* handle{ nullptr };
+	int width{ 800 };
+	int height{ 600 };
+	std::string_view title{ "Achronis" };
+	bool shouldClose{ false };
 };
 
 namespace WindowSystem 

@@ -89,26 +89,26 @@ bool createInstance(VulkanContext& context, GLFWwindow* window) {
 	}
 
 	VkApplicationInfo appInfo{
-		.sType {VK_STRUCTURE_TYPE_APPLICATION_INFO},
-		.pNext {nullptr},
-		.pApplicationName {"Achronis"},
-		.applicationVersion {VK_MAKE_VERSION(1, 0, 0)},
-		.pEngineName {"No Engine"},
-		.engineVersion {VK_MAKE_VERSION(1, 0, 0)},
-		.apiVersion {VK_API_VERSION_1_4}
+		.sType{ VK_STRUCTURE_TYPE_APPLICATION_INFO },
+		.pNext{ nullptr },
+		.pApplicationName{ "Achronis" },
+		.applicationVersion{ VK_MAKE_VERSION(1, 0, 0) },
+		.pEngineName{ "No Engine" },
+		.engineVersion{ VK_MAKE_VERSION(1, 0, 0) },
+		.apiVersion{ VK_API_VERSION_1_4 }
 	};
 
 	auto extensions{ getRequiredExtensions() };
 
 	VkInstanceCreateInfo createInfo{
-		.sType {VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO},
-		.pNext {nullptr},
-		.flags {0},
-		.pApplicationInfo {&appInfo},
-		.enabledLayerCount {static_cast<uint32_t>(validationLayers.size())},
-		.ppEnabledLayerNames {validationLayers.data()},
-		.enabledExtensionCount {static_cast<uint32_t>(extensions.size())},
-		.ppEnabledExtensionNames {extensions.data()}
+		.sType{ VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO },
+		.pNext{ nullptr },
+		.flags{ 0 },
+		.pApplicationInfo{ &appInfo },
+		.enabledLayerCount{ static_cast<uint32_t>(validationLayers.size()) },
+		.ppEnabledLayerNames{ validationLayers.data() },
+		.enabledExtensionCount{ static_cast<uint32_t>(extensions.size()) },
+		.ppEnabledExtensionNames{ extensions.data() }
 	};
 
 	if (enableValidationLayers) {
@@ -131,11 +131,11 @@ bool createInstance(VulkanContext& context, GLFWwindow* window) {
 bool vkSurfaceKHR(VulkanContext& context, GLFWwindow* window) {
 #ifdef _WIN32
 	VkWin32SurfaceCreateInfoKHR vkWin32SurfInfo {
-		.sType {VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR},
-		.pNext {nullptr},
-		.flags {0},
-		.hinstance {GetModuleHandle(nullptr)},
-		.hwnd {glfwGetWin32Window(window)}
+		.sType{ VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR },
+		.pNext{ nullptr },
+		.flags{ 0 },
+		.hinstance{ GetModuleHandle(nullptr) },
+		.hwnd{ glfwGetWin32Window(window) }
 	};
 
 	VkResult win32SurfResult {vkCreateWin32SurfaceKHR(context.instance, &vkWin32SurfInfo, nullptr, &context.surface)};
@@ -238,7 +238,7 @@ bool vkPickPhysicalDevice(VulkanContext& context, GLFWwindow* window) {
 QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
 	QueueFamilyIndices indices;
 
-	uint32_t queueFamilyCount {0};
+	uint32_t queueFamilyCount{ 0 };
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
 	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
@@ -271,12 +271,12 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
 // while picking the device, once again here), but that's a much smaller cost than duplicated logic. :)
 
 void createLogicalDevice(VulkanContext& context, GLFWwindow* window) {
-	QueueFamilyIndices indices {findQueueFamilies(context.physicalDevice)};
+	QueueFamilyIndices indices{ findQueueFamilies(context.physicalDevice) };
 
 	VkDeviceQueueCreateInfo queueCreateInfo{
-		.sType {VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO},
-		.queueFamilyIndex {indices.graphicsFamily.value()},
-		.queueCount {1}
+		.sType{ VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO },
+		.queueFamilyIndex{ indices.graphicsFamily.value() },
+		.queueCount{ 1 }
 	};
 
 	float queuePriority{ 1.0f };
@@ -289,11 +289,11 @@ void createLogicalDevice(VulkanContext& context, GLFWwindow* window) {
 	// swapchain later.
 
 	VkDeviceCreateInfo createInfo {
-		.sType {VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO},
-		.queueCreateInfoCount {1},
-		.pQueueCreateInfos {&queueCreateInfo},
-		.enabledExtensionCount {0},
-		.pEnabledFeatures {&deviceFeatures},
+		.sType{ VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO },
+		.queueCreateInfoCount{ 1 },
+		.pQueueCreateInfos{ &queueCreateInfo },
+		.enabledExtensionCount{ 0 },
+		.pEnabledFeatures{ &deviceFeatures },
 	};
 
 	if (enableValidationLayers) {
