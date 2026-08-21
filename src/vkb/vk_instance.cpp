@@ -2,7 +2,6 @@
 #include <vector>
 #include <cstring>
 #include <stdexcept >
-#include <iostream>
 
 
 namespace vkb {
@@ -61,8 +60,8 @@ namespace vkb {
 		VkInstanceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pApplicationInfo = &appInfo;
-		createInfo.enabledExtensionCount = 0;
-		createInfo.ppEnabledExtensionNames = nullptr;
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(props.extensions.size());
+		createInfo.ppEnabledExtensionNames = props.extensions.data();
 		createInfo.enabledLayerCount = static_cast<uint32_t>(props.validationLayers.size());
 		createInfo.ppEnabledLayerNames = props.validationLayers.data();
 

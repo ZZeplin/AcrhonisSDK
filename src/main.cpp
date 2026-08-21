@@ -7,6 +7,8 @@
 #include "Window.h"
 #include <vulkan/vulkan.h>
 #include <src/VulkanContext.h>
+#include <src/vkb/vk_instance.h>
+#include <src/vkb/vk_surface.h>
 
 #include <vector>
 
@@ -18,12 +20,26 @@ int main() {
 		return -1;
 	}
 
-	VulkanContext context{};
-	
-	std::cout << "SUCCESS WINDOW AND INSTANCE WERE CREATED" << std::endl;
+	uint32_t glfwExtensionCount{ 0 };
+	const char** glfwExtensions{ glfwGetRequiredInstanceExtensions(&glfwExtensionCount) };
 
-	while (!window.shouldClose) {
-		WindowSystem::Update(window);
+	try {
+		vkb::InstanceProperties props{};
+		props.extensions = std::vector<const char*>(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+		vkb::VulkanInstance instance(props);
+		vkb::SurfaceKHR surface(instance, window.handle);
+
+		std::cout << "SUCCESS WINDOW AND INSTANCE WERE CREATED" << std::endl;
+  
+		while (!window.shouldClose) {
+			WindowSystem::Update(window);
+		}
+	}
+	catch (const std::exception& e){
+		std::cerr << "Fatal Error: " << e.what() << std::endl;
+		WindowSystem::Shutdown(window);
+		return -1;
 	}
 
 	WindowSystem::Shutdown(window);
