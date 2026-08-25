@@ -4,12 +4,13 @@
 #include <GLFW/glfw3.h>
 
 #include <string_view>
+#include <cstdint>
 
 struct WindowConfig
 {
 	GLFWwindow* handle{ nullptr };
-	int width{ 800 };
-	int height{ 600 };
+	int32_t width{ 800 };
+	int32_t height{ 600 };
 	std::string_view title{ "Achronis" };
 	bool shouldClose{ false };
 };

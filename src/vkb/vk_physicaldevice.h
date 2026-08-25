@@ -7,7 +7,7 @@ namespace vkb {
 
 	class PhysicalDevice {
 	public:
-		explicit PhysicalDevice(VulkanInstance& instance, VkSurfaceKHR& surface);
+		explicit PhysicalDevice(VulkanInstance& instance, VkSurfaceKHR surface);
 		~PhysicalDevice() = default;
 
 		VkPhysicalDevice GetHandle() const { return m_physicalDevice; }

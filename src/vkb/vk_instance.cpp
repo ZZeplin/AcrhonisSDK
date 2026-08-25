@@ -1,12 +1,18 @@
+#define GLFW_INCLUDE_VULKAN
+
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
+
 #include <src/vkb/vk_instance.h>
 #include <vector>
 #include <cstring>
-#include <stdexcept >
+#include <stdexcept>
+#include <cassert>
 
 
 namespace vkb {
 
-	bool CheckValidationLayerSupport(InstanceProperties& props) {
+	bool CheckValidationLayerSupport(const InstanceProperties& props) {
 		uint32_t layerCount;
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -26,25 +32,30 @@ namespace vkb {
 		// through every element in validationLayers, so there's no separate condition
 		// or increment to write. The language handles that for you.
 
-		for (const char* layerName : props.validationLayers) {
-			bool layerFound{ false };
+		// The note above is now out of date, please update this !!!!!
 
+		for (uint32_t i{ 0 }; i < props.validationLayerCount; ++i) {
+			const char* layerName{ props.validationLayers[i] };
+			bool foundLayer{ false };
 			for (const auto& layerProperties : availableLayers) {
 				if (strcmp(layerName, layerProperties.layerName) == 0) {
-					layerFound = true;
+					foundLayer = true;
 					break;
-				}
+				} 
 			}
-
-			if (!layerFound) {
+			if (!foundLayer) {
 				return false;
 			}
 		}
-
+	
 		return true;
 	}
 
-	VulkanInstance::VulkanInstance(InstanceProperties& props) {
+	VulkanInstance::VulkanInstance(const InstanceProperties& props) {
+		if (props.validationLayerCount > props.validationLayers.size() || props.extensionCount > props.extensions.size()) {
+			throw std::invalid_argument("InstanceProperties: the counte exceeds the fixed array capacity");
+		}
+
 		if (props.enableValidationLayers && !CheckValidationLayerSupport(props)) {
 			throw std::runtime_error("Validation layers requested, but not available!");
 		}
@@ -60,9 +71,9 @@ namespace vkb {
 		VkInstanceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pApplicationInfo = &appInfo;
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(props.extensions.size());
+		createInfo.enabledExtensionCount = props.extensionCount;
 		createInfo.ppEnabledExtensionNames = props.extensions.data();
-		createInfo.enabledLayerCount = static_cast<uint32_t>(props.validationLayers.size());
+		createInfo.enabledLayerCount = props.validationLayerCount;
 		createInfo.ppEnabledLayerNames = props.validationLayers.data();
 
 		if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS) {

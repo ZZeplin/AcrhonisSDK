@@ -6,7 +6,7 @@
 
 namespace vkb {
 
-	PhysicalDevice::PhysicalDevice(VulkanInstance& instance, VkSurfaceKHR& surface) : m_instance(instance), m_surface(surface), m_physicalDevice(VK_NULL_HANDLE) {
+	PhysicalDevice::PhysicalDevice(vkb::VulkanInstance& instance, VkSurfaceKHR surface) : m_instance(instance), m_surface(surface), m_physicalDevice(VK_NULL_HANDLE) {
 		uint32_t deviceCount{ 0 };
 		if (vkEnumeratePhysicalDevices(m_instance.GetHandle(), &deviceCount, nullptr) != VK_SUCCESS) {
 			throw std::runtime_error("Enumerate physical devices failed to succeed!");
