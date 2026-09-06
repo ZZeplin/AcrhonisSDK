@@ -3,7 +3,7 @@
 #
 
 # Add source to this project's executable.
-add_executable (Achronis "src/main.cpp" "src/Window.cpp"     "src/vkb/vk_instance.cpp" "src/vkb/vk_instance.h"  "src/vkb/vk_surface.h" "src/vkb/vk_surface.cpp" "src/vkb/vk_physicaldevice.cpp" "src/vkb/vk_physicaldevice.h" "src/vkb/vk_queuefamilies.cpp" "src/vkb/vk_queuefamilies.h" "src/vkb/vk_device.cpp" "src/vkb/vk_device.h")
+add_executable (Achronis "src/main.cpp" "src/Window.cpp"     "src/vkb/vk_instance.cpp" "src/vkb/vk_instance.h"  "src/vkb/vk_surface.h" "src/vkb/vk_surface.cpp" "src/vkb/vk_physicaldevice.cpp" "src/vkb/vk_physicaldevice.h" "src/vkb/vk_queuefamilies.cpp" "src/vkb/vk_queuefamilies.h" "src/vkb/vk_device.cpp" "src/vkb/vk_device.h" "src/vkb/vk_swapchain.cpp" "src/vkb/vk_swapchain.h")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET Achronis PROPERTY CXX_STANDARD 20)

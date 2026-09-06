@@ -6,29 +6,27 @@
 
 namespace vkb {
 
-	PhysicalDevice::PhysicalDevice(vkb::VulkanInstance& instance, VkSurfaceKHR surface) : m_instance(instance), m_surface(surface), m_physicalDevice(VK_NULL_HANDLE) {
+	void GetPhysicalDevice(InstanceRuntime& instRuntime, PhysDeviceRuntime& deviceRuntime, SurfaceRuntime& surfRuntime) {
 		uint32_t deviceCount{ 0 };
-		if (vkEnumeratePhysicalDevices(m_instance.GetHandle(), &deviceCount, nullptr) != VK_SUCCESS) {
-			throw std::runtime_error("Enumerate physical devices failed to succeed!");
-		}
+		vkEnumeratePhysicalDevices(instRuntime.vk_instance, &deviceCount, nullptr);
 
 		if (deviceCount == 0) {
-			throw std::runtime_error("Failed to find GPU with vulkan support!");
+			throw std::runtime_error("Failed to find a GPU with vulkan support!");
 		}
 
 		std::vector<VkPhysicalDevice> devices(deviceCount);
-		if (vkEnumeratePhysicalDevices(m_instance.GetHandle(), &deviceCount, devices.data()) != VK_SUCCESS) {
-			throw std::runtime_error("Enumerate physical devices failed to succeed~");
-		}
+		vkEnumeratePhysicalDevices(instRuntime.vk_instance, &deviceCount, devices.data());
 
+		/* Evaluates each GPU and checks its compatibility with the surface -- 
+		   if the GPU is compatible, then it set that GPU to our physicalDevice */
 		for (const auto& device : devices) {
-			if (isDeviceSuitable(device, m_surface)) {
-				m_physicalDevice = device;
+			if (isDeviceSuitable(device, surfRuntime.vk_surface)) {
+				deviceRuntime.vk_physicalDevice = device;
 				break;
 			}
 		}
 
-		if (m_physicalDevice == VK_NULL_HANDLE) {
+		if (deviceRuntime.vk_physicalDevice == VK_NULL_HANDLE) {
 			throw std::runtime_error("Failed to find a suitable device!");
 		}
 	}

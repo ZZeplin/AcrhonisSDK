@@ -4,16 +4,18 @@
 
 namespace vkb {
 
-	SurfaceKHR::SurfaceKHR(VulkanInstance& instance, GLFWwindow* window) : m_Instance(instance) {
-		if (glfwCreateWindowSurface(m_Instance.GetHandle(), window, nullptr, &m_surface) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create window surface! (How is this even possible)");
+	bool CreateSurface(SurfaceRuntime& surfRuntime, InstanceRuntime& instRuntime, GLFWwindow* window) {
+		if (glfwCreateWindowSurface(instRuntime.vk_instance, window, nullptr, &surfRuntime.vk_surface)) {
+			return true;
 		}
+
+		return false;
 	}
 
-	SurfaceKHR::~SurfaceKHR() {
-		if (m_surface != VK_NULL_HANDLE) {
-			vkDestroySurfaceKHR(m_Instance.GetHandle(), m_surface, nullptr);
-			m_surface = VK_NULL_HANDLE;
+	void DestroySurface(SurfaceRuntime& surfRuntime, InstanceRuntime& instRuntime) {
+		if (surfRuntime.vk_surface != VK_NULL_HANDLE) {
+			vkDestroySurfaceKHR(instRuntime.vk_instance, surfRuntime.vk_surface, nullptr);
+			surfRuntime.vk_surface = VK_NULL_HANDLE;
 		}
 	}
 }

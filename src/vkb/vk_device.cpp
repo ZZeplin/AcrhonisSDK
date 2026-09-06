@@ -4,9 +4,39 @@
 #include <src/vkb/vk_device.h>
 #include <src/vkb/vk_queuefamilies.h>
 #include <src/vkb/vk_physicaldevice.h>
+#include <src/vkb/vk_swapchain.h>
+#include <cstring>
+#include <vector>
+#include <set>
+#include <string>
 
 namespace vkb {
-	VulkanDevice::VulkanDevice(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface) {
+	bool CheckSwapChainSupport(DeviceProperties props, VkPhysicalDevice physicalDevice) {
+		uint32_t deviceExtensionCount{ 0 };
+		vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, nullptr);
+
+		std::vector<VkExtensionProperties> availableExtensions(deviceExtensionCount);
+		vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, availableExtensions.data());
+
+		for (const char* required : props.requiredDeviceExtensions) {
+			bool foundExtension{ false };
+
+			for (const auto& extension : availableExtensions) {
+				if (std::strcmp(required, extension.extensionName) == 0) {
+					foundExtension = true;
+					break;
+				}
+			}
+
+			if (!foundExtension) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	VulkanDevice::VulkanDevice(DeviceProperties props, VkPhysicalDevice physicalDevice, VkSurfaceKHR surface) {
 		vkb::QueueFamilyIndices indices{ vkb::findQueueFamilies(physicalDevice, surface) };
 
 		uint32_t uniqueQueueFamilies[2];
@@ -43,6 +73,8 @@ namespace vkb {
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 		createInfo.pQueueCreateInfos = queueCreateInfos.data();
+		createInfo.enabledExtensionCount = props.requiredDeviceExtensions.size();
+		createInfo.ppEnabledExtensionNames = props.requiredDeviceExtensions.data();
 		createInfo.pNext = &features14;
 
 		if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &m_device) != VK_SUCCESS) {

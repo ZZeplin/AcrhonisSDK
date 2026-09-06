@@ -7,16 +7,10 @@
 #include <src/vkb/vk_instance.h>
 
 namespace vkb {
-
-	class SurfaceKHR {
-	public:
-		explicit SurfaceKHR(VulkanInstance& instance, GLFWwindow* window);
-		~SurfaceKHR();
-
-		VkSurfaceKHR GetHandle() const { return m_surface; }
-	private:
-		VkSurfaceKHR m_surface{ VK_NULL_HANDLE };
-
-		VulkanInstance& m_Instance;
+	struct SurfaceRuntime {
+		VkSurfaceKHR vk_surface{ VK_NULL_HANDLE };
 	};
+
+	bool CreateSurface(SurfaceRuntime& surfRuntime, InstanceRuntime& instRuntime, GLFWwindow* window);
+	void DestroySurface(SurfaceRuntime& surfRuntime, InstanceRuntime& instRuntime);
 }

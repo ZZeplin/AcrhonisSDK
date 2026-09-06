@@ -4,45 +4,33 @@
 #include <GLFW/glfw3native.h>
 
 #include <src/vkb/vk_instance.h>
-#include <vector>
-#include <cstring>
 #include <stdexcept>
-#include <cassert>
 
 
 namespace vkb {
 
-	bool CheckValidationLayerSupport(const InstanceProperties& props) {
+	bool CheckValidationLayerSupport(const InstanceCreateInfo& instCreateInfo) {
 		uint32_t layerCount;
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
 		std::vector<VkLayerProperties> availableLayers(layerCount);
 		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-		// loops in range validationLayers for each required layerName. layerFound acts
-		// as a flag -- it starts as fals, and only swaps to true if strcmp finds an
-		// exact match, at which point it stops searching for that layer and moves on
-		// to the next. If you are unfamiliar with strcmp -- it derives from the C 
-		// standard library meaning "string compare", it takes 2 strings and compares
-		// them character by character. In this case, it's comparing 2 string until
-		// they are exactly equal.
-
-		// Note for newer programmers: this isn't the traidtion 3-part for loop you may
-		// have learned first. This is a range-based for loop -- it automatically walks
-		// through every element in validationLayers, so there's no separate condition
-		// or increment to write. The language handles that for you.
-
-		// The note above is now out of date, please update this !!!!!
-
-		for (uint32_t i{ 0 }; i < props.validationLayerCount; ++i) {
-			const char* layerName{ props.validationLayers[i] };
+		// Getting the original layerName from requiredLayers then getting
+		// the availableLayer from availableLayers. After which, then compares
+		// laeryName to the availableLayer to see if they are exactly equal,
+		// if they are it then sets the foundLayer to true and ends the loop,
+		// if not, returns false.
+		for (const auto& layerName : instCreateInfo.requiredLayers) {
 			bool foundLayer{ false };
-			for (const auto& layerProperties : availableLayers) {
-				if (strcmp(layerName, layerProperties.layerName) == 0) {
+
+			for (const auto& availableLayer : availableLayers) {
+				if (strcmp(layerName, availableLayer.layerName) == 0) {
 					foundLayer = true;
 					break;
-				} 
+				}
 			}
+
 			if (!foundLayer) {
 				return false;
 			}
@@ -51,40 +39,63 @@ namespace vkb {
 		return true;
 	}
 
-	VulkanInstance::VulkanInstance(const InstanceProperties& props) {
-		if (props.validationLayerCount > props.validationLayers.size() || props.extensionCount > props.extensions.size()) {
-			throw std::invalid_argument("InstanceProperties: the counte exceeds the fixed array capacity");
-		}
+	void GetRequiredExtensions(InstanceCreateInfo& instCreateInfo) {
+		uint32_t glfwExtensionCount{ 0 };
+		const char** glfwExtensions{ glfwGetRequiredInstanceExtensions(&glfwExtensionCount) };
 
-		if (props.enableValidationLayers && !CheckValidationLayerSupport(props)) {
-			throw std::runtime_error("Validation layers requested, but not available!");
+		instCreateInfo.requiredExtensions.reserve(instCreateInfo.requiredExtensions.size() + glfwExtensionCount);
+
+		for (uint32_t i{ 0 }; i < glfwExtensionCount; ++i) {
+			instCreateInfo.requiredExtensions.push_back(glfwExtensions[i]);
+		}
+	}
+
+	bool CreateInstance(const InstanceCreateInfo& instCreateInfo, InstanceRuntime& instRuntime) {
+		// Checking if the requested validation layers are actually available on
+		// this system before proceeding. If they aren't, fail with a clear error
+		// before the instance is created to prevent a non-obvious cause.
+		if (instCreateInfo.enableValidationLayers && !CheckValidationLayerSupport(instCreateInfo)) {
+			throw std::runtime_error("The requested validation layer is not available!");
 		}
 
 		VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		appInfo.pApplicationName = props.appName;
-		appInfo.applicationVersion = props.applicationVersion;
-		appInfo.pEngineName = props.engineName;
-		appInfo.engineVersion = props.engineVersion;
-		appInfo.apiVersion = props.apiVersion;
+		appInfo.pApplicationName = instCreateInfo.appName;
+		appInfo.applicationVersion = instCreateInfo.applicationVersion;
+		appInfo.pEngineName = instCreateInfo.engineName;
+		appInfo.engineVersion = instCreateInfo.engineVersion;
+		appInfo.apiVersion = instCreateInfo.apiVersion;
 
-		VkInstanceCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		createInfo.pApplicationInfo = &appInfo;
-		createInfo.enabledExtensionCount = props.extensionCount;
-		createInfo.ppEnabledExtensionNames = props.extensions.data();
-		createInfo.enabledLayerCount = props.validationLayerCount;
-		createInfo.ppEnabledLayerNames = props.validationLayers.data();
+		VkInstanceCreateInfo instanceCreateInfo{};
+		instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+		instanceCreateInfo.pApplicationInfo = &appInfo;
 
-		if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS) {
-			throw std::runtime_error("Vulkan Instance was not created (how is this even possible)!");
+		// If validation layers are enabled, pass them to instanceCreateInfo;
+		// If not, then leave enabledLayercount && ppEnabledLayerNames are their defaults
+		if (instCreateInfo.enableValidationLayers) {
+			instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(instCreateInfo.requiredLayers.size());
+			instanceCreateInfo.ppEnabledLayerNames = instCreateInfo.requiredLayers.data();
 		}
+		else {
+			instanceCreateInfo.enabledLayerCount = 0;
+			instanceCreateInfo.ppEnabledLayerNames = nullptr;
+		}
+
+		instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(instCreateInfo.requiredExtensions.size());
+		instanceCreateInfo.ppEnabledExtensionNames = instCreateInfo.requiredExtensions.data();
+
+		if (vkCreateInstance(&instanceCreateInfo, nullptr, &instRuntime.vk_instance) != VK_SUCCESS) {
+			throw std::runtime_error("VkCreateInstance failed to succeed!");
+		}
+
+		return true;
 	}
 
-	VulkanInstance::~VulkanInstance() {
-		if (m_Instance != VK_NULL_HANDLE) {
-			vkDestroyInstance(m_Instance, nullptr);
-			m_Instance = VK_NULL_HANDLE;
+	// Destroys the instance, pretty self explanatory, but, just wanted to make sure you knew! :)
+	void DestroyInstance(InstanceRuntime& instRuntime) {
+		if (instRuntime.vk_instance != VK_NULL_HANDLE) {
+			vkDestroyInstance(instRuntime.vk_instance, nullptr);
+			instRuntime.vk_instance = VK_NULL_HANDLE;
 		}
 	}
 }
